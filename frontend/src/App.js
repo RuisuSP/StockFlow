@@ -72,7 +72,7 @@ function App() {
 
       <main className="content">
         <section className="form-card">
-          <h3>{editando ? "📝 Editar Producto" : "Nuevo Producto"}</h3>
+          <h3>{editando ? "Editar Producto" : "Nuevo Producto"}</h3>
           <form onSubmit={handleSubmit} className="product-form">
             <div className="input-group">
               <input name="nombre" placeholder="Nombre" value={form.nombre} onChange={handleChange} required />
@@ -110,7 +110,12 @@ function App() {
         </div>
 
         <hr className="separator" />
-        <Ventas productosDisponibles={productos} alVender={cargarProductos} />
+        {/* Agregamos la prop user={user} para que Ventas sepa quién compra */}
+          <Ventas 
+            productosDisponibles={productos} 
+            alVender={cargarProductos} 
+            user={user} 
+          />
       </main>
     </div>
   );
