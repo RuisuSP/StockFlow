@@ -11,6 +11,11 @@ function App() {
   const [editando, setEditando] = useState(false);
   const [productoId, setProductoId] = useState(null);
   const [form, setForm] = useState({ nombre: '', descripcion: '', precio: '', stock: '' });
+  
+  // NUEVO: Estado para búsqueda en inventario
+  const [filtroInventario, setFiltroInventario] = useState("");
+
+  const isAdmin = user?.rol === 'admin';
 
   const cargarProductos = async () => {
     try {
@@ -31,7 +36,7 @@ function App() {
       else await crearProducto(datos);
       cancelarEdicion();
       cargarProductos();
-    } catch (err) { alert("Error"); }
+    } catch (err) { alert("Error al guardar"); }
   };
 
   const prepararEdicion = (p) => {
@@ -47,21 +52,12 @@ function App() {
     setForm({ nombre: '', descripcion: '', precio: '', stock: '' });
   };
 
-  const handleEliminar = async (id) => {
-    if (window.confirm("¿Eliminar?")) {
-      await eliminarProducto(id);
-      cargarProductos();
-    }
-  };
+  // Filtrado de productos para la vista
+  const productosFiltrados = productos.filter(p => 
+    p.nombre.toLowerCase().includes(filtroInventario.toLowerCase())
+  );
 
-  if (!user) {
-    return (
-      <div className="welcome-screen">
-        <h1 className="hero-logo">StockFlow</h1>
-        <Login />
-      </div>
-    );
-  }
+  if (!user) return <div className="welcome-screen"><h1 className="hero-logo">StockFlow</h1><Login /></div>;
 
   return (
     <div className="app-container">
@@ -71,51 +67,58 @@ function App() {
       </header>
 
       <main className="content">
-        <section className="form-card">
-          <h3>{editando ? "Editar Producto" : "Nuevo Producto"}</h3>
-          <form onSubmit={handleSubmit} className="product-form">
-            <div className="input-group">
-              <input name="nombre" placeholder="Nombre" value={form.nombre} onChange={handleChange} required />
-              <input name="descripcion" placeholder="Descripción" value={form.descripcion} onChange={handleChange} />
-              <input name="precio" type="number" placeholder="Precio" value={form.precio} onChange={handleChange} required />
-              <input name="stock" type="number" placeholder="Stock" value={form.stock} onChange={handleChange} required />
-            </div>
-            <div className="form-buttons">
-              <button type="submit" className="btn-save">{editando ? "Actualizar" : "Guardar"}</button>
-              {editando && <button type="button" onClick={cancelarEdicion} className="btn-cancel">Cancelar</button>}
-            </div>
-          </form>
-        </section>
+        {isAdmin && (
+          <section className="form-card">
+            <h3>{editando ? "Editar Producto" : "🆕 Nuevo Producto"}</h3>
+            <form onSubmit={handleSubmit} className="product-form">
+              <div className="input-group">
+                <input name="nombre" placeholder="Nombre" value={form.nombre} onChange={handleChange} required />
+                <input name="descripcion" placeholder="Descripción" value={form.descripcion} onChange={handleChange} />
+                <input name="precio" type="number" placeholder="Precio" value={form.precio} onChange={handleChange} required />
+                <input name="stock" type="number" placeholder="Stock" value={form.stock} onChange={handleChange} required />
+              </div>
+              <div className="form-buttons">
+                <button type="submit" className="btn-save">{editando ? "Actualizar" : "Guardar"}</button>
+                {editando && <button type="button" onClick={cancelarEdicion} className="btn-cancel">Cancelar</button>}
+              </div>
+            </form>
+          </section>
+        )}
 
-        <h2 className="section-title">Inventario</h2>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+          <h2 className="section-title" style={{ margin: 0 }}>Inventario Disponible</h2>
+          {/* BUSCADOR DE INVENTARIO */}
+          <input 
+            type="text" 
+            placeholder="Buscar en inventario..." 
+            value={filtroInventario}
+            onChange={(e) => setFiltroInventario(e.target.value)}
+            style={{ padding: '10px', borderRadius: '8px', background: '#1e293b', border: '1px solid #334155', color: 'white', width: '250px' }}
+          />
+        </div>
+
         <div className="inventory-grid">
-          {productos.map(p => (
+          {productosFiltrados.map(p => (
             <div key={p.id} className="product-card">
               <h4>{p.nombre}</h4>
-              {/* ID del producto en gris y chiquito justo debajo del nombre */}
-              <p style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '-10px', marginBottom: '10px' }}>
-                ID: {p.id}
-              </p>
+              <p style={{ fontSize: '0.7rem', color: '#64748b' }}>ID: {p.id}</p>
               <p className="description">{p.descripcion}</p>
               <div className="meta">
                 <span className="price">${p.precio}</span>
                 <span className="stock">{p.stock} uds</span>
               </div>
-              <div className="actions">
-                <button onClick={() => prepararEdicion(p)} className="btn-edit">Editar</button>
-                <button onClick={() => handleEliminar(p.id)} className="btn-delete">Eliminar</button>
-              </div>
+              {isAdmin && (
+                <div className="actions">
+                  <button onClick={() => prepararEdicion(p)} className="btn-edit">Editar</button>
+                  <button onClick={async () => { if(window.confirm("¿Eliminar?")) { await eliminarProducto(p.id); cargarProductos(); } }} className="btn-delete">Eliminar</button>
+                </div>
+              )}
             </div>
           ))}
         </div>
 
         <hr className="separator" />
-        {/* Agregamos la prop user={user} para que Ventas sepa quién compra */}
-          <Ventas 
-            productosDisponibles={productos} 
-            alVender={cargarProductos} 
-            user={user} 
-          />
+        <Ventas productosDisponibles={productos} alVender={cargarProductos} user={user} />
       </main>
     </div>
   );

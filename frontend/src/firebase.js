@@ -1,6 +1,7 @@
 // frontend/src/firebase.js
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth"; // Importamos el servicio de Auth
+import { getFirestore } from "firebase/firestore"; // Importamos Firestore para roles
 
 const firebaseConfig = {
   apiKey: "AIzaSyA0xtq_W8Kl9U86a8CuO_g7yHcjlUkV8bQ",
@@ -17,5 +18,6 @@ const app = initializeApp(firebaseConfig);
 
 // Exportamos 'auth' para que tus componentes puedan loguearse
 export const auth = getAuth(app);
+export const db = getFirestore(app); // Exportamos Firestore para manejar roles y otros datos
 
 export default app;

@@ -5,14 +5,14 @@ import {
   signInWithPopup, 
   signOut, 
   signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword 
+  createUserWithEmailAndPassword,
+  sendEmailVerification // <-- 1. Importamos la función de verificación
 } from 'firebase/auth';
 import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
   const { user } = useAuth();
   
-  // Estados para el formulario de correo
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [modoRegistro, setModoRegistro] = useState(false);
@@ -30,16 +30,29 @@ const Login = () => {
     e.preventDefault();
     try {
       if (modoRegistro) {
-        // Registro de nuevo usuario
-        await createUserWithEmailAndPassword(auth, email, password);
-        alert("Cuenta creada exitosamente. ¡Bienvenido!");
+        // 2. Registro y envío de correo de verificación
+        const res = await createUserWithEmailAndPassword(auth, email, password);
+        await sendEmailVerification(res.user);
+        
+        // Cerramos la sesión temporalmente para obligarlo a verificar
+        await signOut(auth); 
+        
+        alert("¡Cuenta creada! Hemos enviado un enlace de verificación a tu correo. Por favor, confírmalo antes de iniciar sesión.");
+        setModoRegistro(false); // Lo regresamos a la vista de login
+        setEmail('');
+        setPassword('');
+        
       } else {
-        // Inicio de sesión normal
-        await signInWithEmailAndPassword(auth, email, password);
+        // 3. Inicio de sesión con candado de verificación
+        const res = await signInWithEmailAndPassword(auth, email, password);
+        
+        if (!res.user.emailVerified) {
+          await signOut(auth); // Lo sacamos si no está verificado
+          alert("Aún no has verificado tu correo. Por favor, revisa tu bandeja de entrada o la carpeta de SPAM.");
+        }
       }
     } catch (error) {
       console.error(error);
-      // Mensajes de error más amigables
       let mensaje = "Hubo un problema. Inténtalo de nuevo.";
       if (error.code === 'auth/wrong-password') mensaje = "Contraseña incorrecta.";
       if (error.code === 'auth/user-not-found') mensaje = "Usuario no encontrado.";
@@ -52,7 +65,6 @@ const Login = () => {
 
   const cerrarSesion = () => signOut(auth);
 
-  // VISTA CUANDO EL USUARIO ESTÁ LOGUEADO (Header - Imagen 4)
   if (user) {
     return (
       <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
@@ -60,7 +72,6 @@ const Login = () => {
           <div style={{ fontSize: '0.9rem', fontWeight: '700', color: 'var(--text)' }}>
             {user.displayName || user.email}
           </div>
-          {/* Botón de Cerrar Sesión con nueva clase .btn-logout */}
           <button onClick={cerrarSesion} className="btn-logout" style={{ marginTop: '5px' }}>
             Cerrar Sesión
           </button>
@@ -80,7 +91,6 @@ const Login = () => {
     );
   }
 
-  // VISTA DE LOGIN (Imagen 3)
   return (
     <div className="card login-card" style={{ maxWidth: '350px', padding: '30px' }}>
       <h3 style={{ marginTop: 0, marginBottom: '25px', textAlign: 'center', color: 'var(--text)' }}>
@@ -104,7 +114,6 @@ const Login = () => {
           required 
           style={{ padding: '12px' }}
         />
-        {/* Botón Principal con clase .btn-auth */}
         <button type="submit" className="btn-auth">
           {modoRegistro ? "Registrarse" : "Ingresar"}
         </button>
@@ -125,7 +134,6 @@ const Login = () => {
         <hr style={{ flex: 1, opacity: 0.1, borderColor: 'rgba(255,255,255,0.1)' }} />
       </div>
 
-      {/* Botón de Google con clase .btn-google e icono */}
       <button 
         onClick={loginConGoogle} 
         className="btn-google" 
