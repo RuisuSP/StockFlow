@@ -72,13 +72,13 @@ const Ventas = ({ productosDisponibles, alVender, user }) => {
 
   return (
     <div className="ventas-section" style={{ marginTop: "40px", color: "white" }}>
-      <h2 style={{ color: "var(--primary)" }}>🛒 Punto de Venta</h2>
+      <h2 style={{ color: "var(--primary)" }}>Punto de Venta</h2>
       
       {/* --- SECCIÓN DE TIENDA Y CARRITO (YA ACTUALIZADA) --- */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 350px", gap: "25px", alignItems: "start", marginBottom: "50px" }}>
         {/* Catálogo */}
         <div>
-          <input type="text" placeholder="🔍 Buscar producto en tienda..." value={busquedaVenta} onChange={e => setBusquedaVenta(e.target.value)} style={{ width: "100%", padding: "12px", borderRadius: "10px", background: "#0f172a", border: "1px solid #334155", color: "white", marginBottom: "20px" }} />
+          <input type="text" placeholder="Buscar producto en tienda..." value={busquedaVenta} onChange={e => setBusquedaVenta(e.target.value)} style={{ width: "100%", padding: "12px", borderRadius: "10px", background: "#0f172a", border: "1px solid #334155", color: "white", marginBottom: "20px" }} />
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "15px" }}>
             {prodsVenta.map(p => (
               <div key={p.id} className="card" style={{ padding: "15px", border: "1px solid #1e293b" }}>
@@ -113,7 +113,7 @@ const Ventas = ({ productosDisponibles, alVender, user }) => {
 
       {/* --- HISTORIAL DE OPERACIONES (RESTAURADO) --- */}
       <hr className="separator" />
-      <h3 style={{ marginTop: "40px" }}>📜 Mis Operaciones {isAdmin && "(Vista Admin)"}</h3>
+      <h3 style={{ marginTop: "40px" }}> Mis Operaciones</h3>
       
       <div style={{ display: "flex", gap: "10px", margin: "15px 0" }}>
         {isAdmin && (

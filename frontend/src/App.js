@@ -69,7 +69,7 @@ function App() {
       <main className="content">
         {isAdmin && (
           <section className="form-card">
-            <h3>{editando ? "Editar Producto" : "🆕 Nuevo Producto"}</h3>
+            <h3>{editando ? "Editar Producto" : "Nuevo Producto"}</h3>
             <form onSubmit={handleSubmit} className="product-form">
               <div className="input-group">
                 <input name="nombre" placeholder="Nombre" value={form.nombre} onChange={handleChange} required />
